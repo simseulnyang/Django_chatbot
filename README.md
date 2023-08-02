@@ -121,6 +121,7 @@ django-chat
     - 1차 : 2023-07-26 ~ 2023-08-02 (2단계)
 
 ## <span id="ui">6. UI</span>
+![UI img](README/Django_chat_UI.png)
 <p align="right"><a href="#top">(Top)</a></p>
 
 ## <span id="erd">7. 데이터베이스 모델링(ERD)</span>
@@ -128,10 +129,38 @@ django-chat
 <p align="right"><a href="#top">(Top)</a></p>
 
 ## <span id="pages">8. 페이지 기능</span>
+| 1. 회원가입화면 | 
+|---|
+| ![gif](README/join.gif) |
+
+| 2. 로그인화면 | 
+|---|
+| ![gif](README/login.gif) |
+
+| 3. 로그아웃화면 | 
+|---|
+| ![gif](README/logout.gif) |
+
+| 4. 챗봇화면 | 
+|---|
+| ![gif](README/chatbot.gif) |
 
 <p align="right"><a href="#top">(Top)</a></p>
 
 ## <span id="issues">9. 개발하며 겪은 이슈</span>
+ ### 내용 1. Simple JWT 사용
+- 
+- 
+ ### 결과
+- 
+- 
+
+ ### 내용 2. HTTP_401_ERR0R
+- 
+- 
+ ### 결과
+- 
+- 
 <p align="right"><a href="#top">(Top)</a></p>
 
 
@@ -150,5 +179,11 @@ django-chat
  2. 로그인 & 로그아웃
     - 현재 프로젝트에서는 로그인 상태로 브라우저 웹을 종료하더라도 localstorage에 jwt 값이 남아있어 다시 화면을 열었을 때 여전히 로그인한 상태로 보여집니다. 브라우저 웹이 종료되면 localstorage에 저장된 jwt 값이 delete 되도록 코드 개선이 필요합니다.
     - 현재 프로젝트에서는 index.html 화면에서만 로그아웃이 가능합니다. 채팅 화면에서도 언제든지 사용자가 logout 할 수 있도록 코드개선이 필요합니다.
+
+ 3. 화면 스타일
+    - 현재 프로젝트에서는 일부 기능에 관해서 CSS가 적용되어 있지만 로그인, 회원가입 부분에서 bootstrap을 사용했고, 크기나 위치 조절에 대한 CSS가 적용되지 않아 어색하게 보여집니다. 향후 CSS 적용을 통해 웹에 보여지는 화면이 정렬될 수 있도록 개선이 필요합니다.
+
+ 4. 챗봇
+    - 현재 프로젝트에서는 채팅 화면에서 질문요청시 챗봇에게서 자동으로 답변이 되는 기능이 구현되어 있습니다. Postman을 통해 prompt 값을 전달하면 response 값이 잘 반환되는 것을 확인했으나 웹에서는 Undefined로 출력되는 오류가 발생하고 있습니다. 예상으로는 Front와 연결하기 위해 fetch를 사용하여 서버로부터 데이터를 받아오는 과정에서 오류가 나는 것으로 판단됩니다. 향후 오류가 나는 부분을 파악하여 response 값이 잘 반환되어 화면에서도 제대로 보여질 수 있도록 코드 개선이 필요합니다.
 
 <p align="right"><a href="#top">(Top)</a></p>
