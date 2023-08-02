@@ -35,7 +35,7 @@
     - sqlite3
 
  ### 배포 URL
-    - [FrontEnd Repository](https://github.com/simseulnyang/Django_chatbot_F)
+- [FrontEnd Repository](https://github.com/simseulnyang/Django_chatbot_F)
     - 현재 미정 (추후 배포 예정)
 <p align="right"><a href="#top">(Top)</a></p>
 
