@@ -24,6 +24,8 @@ class ChatbotView(APIView):
         return Response({'conversations': conversations})
 
     def post(self, request):
+        user = request.user
+
         prompt = request.data.get('prompt')
 
         if prompt:
@@ -44,7 +46,7 @@ class ChatbotView(APIView):
 
         response = completions.choices[0].text.strip()
 
-        conversation = ConversationModel(prompt=prompt, response=response)
+        conversation = ConversationModel(user=user, prompt=prompt, response=response)
         conversation.save()
 
         # 대화 기록에 새로운 응답 추가
