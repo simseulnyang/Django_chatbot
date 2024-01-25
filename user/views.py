@@ -69,11 +69,6 @@ class LogoutAPIView(APIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [permissions.IsAuthenticated]
 
-    @swagger_auto_schema(
-        operation_summary="유저 로그아웃",
-        responses={status.HTTP_202_ACCEPTED},
-    )
-
     def post(self, request:Request) -> Response:
         user = request.user
         refresh_token = RefreshToken.for_user(user)
