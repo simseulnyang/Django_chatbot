@@ -37,7 +37,8 @@ class UserSignupAPITest(TestCase):
     def test_user_exists(self):
         payload = {
             "email": "admin@email.com",
-            "password": "admin1234!"
+            "password": "admin1234!",
+            "name": "testname",
         }
         create_user(**payload)
         res = self.client.post(CREATE_USER_URL, payload)
@@ -47,7 +48,8 @@ class UserSignupAPITest(TestCase):
     def test_password_too_short(self):
         payload = {
             "email": "testuser1@example.com",
-            "password": "pass"
+            "password": "pass",
+            "name": "testname",
         }
         res = self.client.post(CREATE_USER_URL, payload)
         
@@ -58,7 +60,8 @@ class UserSignupAPITest(TestCase):
     def test_password_similarity_validator(self):
         payload = {
             "email": "testuser2@example.com",
-            "password": "testuser"
+            "password": "testuser",
+            "name": "testname",
         }
         res = self.client.post(CREATE_USER_URL, payload)
 
