@@ -1,88 +1,98 @@
-from rest_framework.views import APIView
-from rest_framework import status
+from django.contrib.auth import logout
+from drf_yasg.utils import swagger_auto_schema
+from rest_framework import permissions, status
+from rest_framework.request import Request
 from rest_framework.response import Response
-from rest_framework import permissions
-
-from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from user.jwt_claim_serializer import UserTokenObtainPairSerializer
+from rest_framework_simplejwt.tokens import RefreshToken
 
-from django.shortcuts import render
-from .models import User as UserModel
-
-from user.serializers import UserSignupSerializer, ProfileSerializer, UserSerializer
+from user.models import User
+from user.serializers import UserSerializer, UserSignupSerializer, UserLoginSerializer, ProfileSerializer
 
 
-# TokenObtainPairView : urls.py에서 import했고, 토큰을 발급받기 위해 사용
-class SeasonTokenObtainPairView(TokenObtainPairView):
-    # serializer_class에 커스터마이징된 시리얼라이저를 넣어 준다.
-    serializer_class = UserTokenObtainPairSerializer
+class SignupAPIView(APIView):
+    permission_classes=[permissions.AllowAny]
 
+    @swagger_auto_schema(
+        operation_summary="유저 회원가입",
+        request_body=UserSignupSerializer,
+        responses={status.HTTP_201_CREATED: UserSerializer},
+    )
 
-class UserView(APIView):
+    def post(self, request: Request) -> Response:
+        """
+        이메일(email)과 비밀번호(password), 사용자 이름(name)을 받아 새로운 사용자 계정을 생성합니다.
 
-    # 사용자 정보 조회
-    def get(self, request):
-        data = UserModel.objects.get(id=request.user.id)
-        return Response(UserSignupSerializer(data).data, status=status.HTTP_200_OK)
-    
-    # 회원가입
-    def post(self, request):
+        Args:
+            email (str): 사용자 이메일
+            password (str): 사용자 계정 비밀번호
+            name (str): 사용자 이름
+        
+        Return:
+            User: 생성된 사용자 객체
+        """
         serializer = UserSignupSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({'message': '회원가입이 완료되었습니다!'})
-        else:
-            return Response({'message': f'${serializer.errors}'}, 400)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(serializer.data, status.HTTP_201_CREATED)
 
 
-    # 회원 정보 수정
-    def put(self, request):
-        user = UserModel.objects.get(id=request.user.id)
-        serializer = UserSignupSerializer(user, data=request.data, partial=True)
+class LoginAPIView(APIView):
+    permission_classes = [permissions.AllowAny]
 
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    @swagger_auto_schema(
+        operation_summary="유저 로그인",
+        request_body=UserLoginSerializer,
+        responses={status.HTTP_200_OK: UserSerializer},
+    )
+
+    def post(self, request: Request) -> Response:
+        """
+        이메일(email)과 비밀번호(password)를 받아 유저 계정을 활성화하고 JWT 토큰을 발급합니다.
+
+        Args:
+            email(str) : 사용자 계정 이메일
+            password(str) : 사용자 계정 비밀번호
+
+        Retur:
+            token: access token과 refresh token 발급
+        """
+        serializer=UserLoginSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
     
-    # 회원 탈퇴
-    def delete(self, request):
-        user = UserModel.objects.get(id=request.user.id)
-        if user:
-            user.is_active = False
-            return Response({"message": "회원탈퇴 성공"}, status=status.HTTP_200_OK)
-        return Response({"message": "회원탈퇴 실패"}, status=status.HTTP_400_BAD_REQUEST)
-    
 
-
-# 인가된 사용자만 접근할 수 있는 View 생성
-class OnlyAuthenticatedUserView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
-		
-    # JWT 인증방식 클래스 지정하기
+class LogoutAPIView(APIView):
     authentication_classes = [JWTAuthentication]
+    permission_classes = [permissions.IsAuthenticated]
 
-    def get(self, request):
-		# Token에서 인증된 user만 가져온다.
+    @swagger_auto_schema(
+        operation_summary="유저 로그아웃",
+        responses={status.HTTP_202_ACCEPTED},
+    )
+
+    def post(self, request:Request) -> Response:
         user = request.user
-        print(f"user 정보 : {user}")
-        if not user:
-            return Response({"error": "접근 권한이 없습니다."}, status=status.HTTP_401_UNAUTHORIZED)
-        return Response({"message": "Accepted"})
-    
+        refresh_token = RefreshToken.for_user(user)
+        refresh_token.blacklist()
+        logout(request)
+        return Response({"message":"로그아웃 성공"},status=status.HTTP_200_OK)
+
 
 
 class ProfileView(APIView):
 
     def get(self, request, pk):
-        user = UserModel.objects.get(pk=pk)
+        user = User.objects.get(pk=pk)
         serializer = ProfileSerializer(user, data=request.data)
         serializer.save()
         return Response(serializer, status=status.HTTP_200_OK)
     
     def post(self, request, pk):
-        user = UserModel.objects.get(pk=pk)
+        user = User.objects.get(pk=pk)
         serializer = ProfileSerializer(user, data=request.data)
         if serializer.is_valid():
             serializer.save()

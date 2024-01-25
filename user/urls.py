@@ -1,18 +1,16 @@
-from django.urls import path, include
-from django.contrib import admin
-from user import views
-from user.views import SeasonTokenObtainPairView
-from rest_framework_simplejwt.views import (
-    TokenObtainPairView,
-    TokenRefreshView,
-)
+from typing import List
+
+from django.urls import URLPattern, path
+from rest_framework_simplejwt.views import TokenRefreshView
+
+from user.views import SignupAPIView, LoginAPIView, LogoutAPIView, ProfileView
+
 
 urlpatterns = [
     # user/
-    path('', views.UserView.as_view(), name='signup'),
-    path('profile/', views.ProfileView.as_view(), name='profile'),
-    path('api/authonly/', views.OnlyAuthenticatedUserView.as_view()),
-    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('signup/', SignupAPIView.as_view(), name='signup'),
+    path('login/', LoginAPIView.as_view(), name='login'),
+    path('logout/', LogoutAPIView.as_view(), name='logout'),
+    path('profile/', ProfileView.as_view(), name='profile'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path('api/season/token/', SeasonTokenObtainPairView.as_view(), name='season_token'),
 ]
