@@ -1,10 +1,14 @@
-from rest_framework.response import Response
-from rest_framework.generics import ListAPIView
-from rest_framework.views import APIView
-from rest_framework import status
+from django.shortcuts import get_list_or_404
 
-from .serializers import ConversationSerializer
-from .models import Conversation as ConversationModel
+from rest_framework.request import Request
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework import permissions, status
+from rest_framework_simplejwt.authentication import JWTAuthentication
+
+from chat.models import ChatRolePlaying as ChatRolePlayingModel
+from chat.models import Conversation as ConversationModel
+from chat.serializers import ChatRolePlayingSerializer, ChatRolePlayingCreateSerializer
 
 from dotenv import load_dotenv
 import openai
@@ -17,42 +21,35 @@ load_dotenv()
 openai.api_key = os.getenv('OPENAI_API_KEY')
 
 
-class ChatbotView(APIView):
+class ChatRolePlayingCreateAPIView(APIView):
+    """
+    'user', 'language', 'level', 'situation', 'my_role', 'gpt_role' 받아 새로운 RolePlaying Chatting Room을 생성합니다.
 
+    Args:
+        user(str) : user_id
+        language(str) : Roleplaying 진행 시 사용할 언어
+        level(str) : Roleplaying 진행 시 레벨
+        situation(str) : Roleplaying 진행 시 상황
+        my_role(str) : Roleplaying 진행 시 사용자의 역할
+        gpt_role(str) : Roleplaying 진행 시 chatGPT의 역할
+    
+    Return:
+        새로운 RolePlaying chatting Roome
+    """
+    permission_classes = [permissions.IsAuthenticated]
+    authentication_classes=[JWTAuthentication]
+
+    def post(self, request:Request) -> Response:
+        serializer = ChatRolePlayingCreateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(serializer.data, status.HTTP_201_CREATED)
+    
+
+class ChatRolePlayingListAPIView(APIView):
     def get(self, request):
-        conversations = request.session.get('conversations', [])
-        return Response({'conversations': conversations})
+        chatlists = get_list_or_404(ChatRolePlayingModel, user=request.user)
+        serializer = ChatRolePlayingSerializer(chatlists, many=True)
 
-    def post(self, request):
-        user = request.user
-
-        prompt = request.data.get('prompt')
-
-        if prompt:
-            session_conversations = request.session.get('conversations', [])
-            previous_conversations = "\n".join([f"prompt: {c['prompt']}\nresponse: {c['response']}" for c in session_conversations])
-            prompt_with_previous = f"{previous_conversations}\nresponse: {prompt}\nresponse:"
-
-        completions = openai.Completion.create(
-            engine="text-davinci-003",
-            prompt=prompt_with_previous,
-            max_tokens=1024,
-            n=5,
-            stop=None,
-            temperature=0.5,
-        )
-
-        print(completions)
-
-        response = completions.choices[0].text.strip()
-
-        conversation = ConversationModel(user=user, prompt=prompt, response=response)
-        conversation.save()
-
-        # 대화 기록에 새로운 응답 추가
-        session_conversations.append({'prompt': prompt, 'response': response})
-        request.session['conversations'] = session_conversations
-        request.session.modified = True
-        
-        return self.get(request)
-
+        return Response(serializer.data, status=status.HTTP_200_OK)

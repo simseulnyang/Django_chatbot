@@ -5,6 +5,7 @@ from user.manager import UserManager
 
 
 class User(AbstractUser):
+    username = None
     email = models.EmailField(unique=True, max_length=255)
     password = models.CharField(max_length=128)
     name = models.CharField(max_length=10)
@@ -15,7 +16,7 @@ class User(AbstractUser):
     updated_at = models.DateTimeField(auto_now=True)
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = []
+    REQUIRED_FIELDS = ['name']
 
     objects = UserManager()
 
