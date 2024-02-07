@@ -10,7 +10,7 @@ class ChatRolePlayingCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ChatRolePlaying
-        fields = ['user', 'language', 'level', 'situation', 'my_role', 'gpt_role']
+        fields = ['user', 'language', 'level', 'situation', 'my_role', 'gpt_role', 'situation_en', 'my_role_en', 'gpt_role_en']
 
     def create(self, validated_data):
         chatplayingroom = super().create(validated_data)
@@ -38,8 +38,6 @@ class ChatRolePlayingTranslateSerializer(serializers.ModelSerializer):
     class Meta:
         model = ChatRolePlaying
         fields = [
-            "language",
-            "level",
             "situation",
             "situation_en",
             "my_role",
