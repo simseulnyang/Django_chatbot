@@ -8,7 +8,7 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from chat.models import ChatRolePlaying as ChatRolePlayingModel
 from chat.models import Conversation as ConversationModel
-from chat.serializers import ChatRolePlayingSerializer, ChatRolePlayingCreateSerializer, ChatRolePlayingTranslateSerializer
+from chat.serializers import ChatRolePlayingSerializer, ChatRolePlayingCreateSerializer, ChatRolePlayingTranslateSerializer, ChatRolePlayingConversationSerializer
 
 from dotenv import load_dotenv
 import openai
@@ -61,6 +61,23 @@ class ChatplayingroomTranslatingAPIView(APIView):
 
     def post(self, request):
         serializer = ChatRolePlayingTranslateSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+class ChatRolePlayingDetailAPIView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+
+    def get(self, request):
+        conversations = ConversationModel.objects.filter(chatplaying_id=request.chatplaying_id)
+        serializer = ChatRolePlayingConversationSerializer(conversations, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        serializer = ChatRolePlayingConversationSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
